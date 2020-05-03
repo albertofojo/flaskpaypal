@@ -1,0 +1,41 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Ensures optimal rendering on mobile devices. -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" /> <!-- Optimal Internet Explorer compatibility -->
+</head>
+
+<body>
+    <div id="paypal-button-container"></div>
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=CLIENT-ID&currency=EUR&intent=capture"> 
+        // TODO: Replace CLIENT_ID with your Sandbox client-id
+    </script>
+
+    <script>
+        // Render the PayPal button into #paypal-button-container
+        paypal.Buttons({
+
+            // Set up the transaction
+            createOrder: function(data, actions) {
+                return fetch('/api/paypal/order/create', {
+                    method: 'post'
+                }).then(function(res) {
+                    return res.json();
+                }).then(function(data) {
+                    return data.orderID;
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function(data, actions) {
+                return fetch('/api/paypal/order/' + data.orderID + '/capture', {
+                    method: 'post'
+                }).then(function(res) {      
+                    return res.json();
+                }).then(function(details) {         
+                    alert('Payment completed by ' + details.payer.name.given_name + ' ' + details.payer.name.surname);
+                });
+            }
+        }).render('#paypal-button-container');
+    </script>
+
+</body>
